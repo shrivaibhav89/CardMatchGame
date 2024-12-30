@@ -1,5 +1,6 @@
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
@@ -12,14 +13,10 @@ public class GridGenrator : MonoBehaviour
     public CardType[] cardTypes;
     public GridLayoutGroup cardGrid;
     public List<CardTile> tiles = new List<CardTile>();
-
-
-    void Start()
-    {
-        GenrateCardGrid();
-    }
     public void GenrateCardGrid()
     {
+        cardGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        cardGrid.constraintCount = gridWidth;
         int totalCards = gridWidth * gridHeight;
         List<int> positions = new List<int>();
 
@@ -55,12 +52,48 @@ public class GridGenrator : MonoBehaviour
             cardTile2.gameObject.SetActive(true);
             cardTile2.cardType = cardType;
             tiles.Add(cardTile2);
-           
+
             int pos2 = positions[i * 2 + 1];
             cardTile2.transform.SetSiblingIndex(pos2);
         }
 
 
+        RescalGridCell();
+
+
+    }
+
+    private void RescalGridCell()
+    {
+        float cellWidth = cardGrid.GetComponent<RectTransform>().rect.width / gridWidth - cardGrid.spacing.x;
+        float cellHeight = cardGrid.GetComponent<RectTransform>().rect.height / gridHeight - cardGrid.spacing.y;
+        // hight and width should be same what ever is less 
+        if (cellWidth < cellHeight)
+        {
+            cellHeight = cellWidth;
+        }
+        else
+        {
+            cellWidth = cellHeight;
+        }
+
+        cardGrid.cellSize = new Vector2(cellWidth, cellHeight);
+    }
+
+    public void CreateGridForLoadgame(int gridWidth, int gridHeight)
+    {
+        this.gridWidth = gridWidth;
+        this.gridHeight = gridHeight;
+        cardGrid.constraint = GridLayoutGroup.Constraint.FixedColumnCount;
+        cardGrid.constraintCount = gridWidth;
+
+        for (int i = 0; i < (gridWidth * gridHeight); i++)
+        {
+            CardTile cardTile = Instantiate(tilePrefab, cardGrid.transform);
+            cardTile.gameObject.SetActive(true);
+            tiles.Add(cardTile);
+        }
+        RescalGridCell();
     }
 }
 

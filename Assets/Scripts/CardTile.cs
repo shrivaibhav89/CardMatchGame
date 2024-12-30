@@ -9,7 +9,8 @@ public class CardTile : MonoBehaviour
     public Image itemImage;
     public Button button;
     [SerializeField] private Sprite cardBg;
-    private bool isRevealed = false;
+    public bool isRevealed = false;
+    public bool isExposed = false;
 
     private void OnEnable()
     {
@@ -30,17 +31,20 @@ public class CardTile : MonoBehaviour
         {
             return;
         }
+        SoundManager.instance.PlaySound(SoundManager.instance.cardFlipSound);
         isRevealed = true;
         GameEventsManager.cardRevalEvent.Invoke(this);
         itemImage.sprite = cardType.cardImage;
     }
     public void ResetCard()
     {
+
         isRevealed = false;
         itemImage.sprite = cardBg;
     }
     public void HideCard()
     {
+        isExposed = true;
         button.interactable = false;
         itemImage.sprite = null;
     }
