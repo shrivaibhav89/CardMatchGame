@@ -16,13 +16,14 @@ public class GameManager : MonoBehaviour
     }
     public GridGenrator gridGenrator;
     public int score = 0;
-    [SerializeField] private int turns = 0;
+    public int turns = 0;
     public CardTile firstCard;
     public CardTile secondCard;
 
     private int cardMatchScore = 5;
     public GameState gameState = GameState.Idle;
     public static GameManager instance;
+    public GameHudManager gameHudManager;
 
     private void Awake()
     {
@@ -51,6 +52,7 @@ public class GameManager : MonoBehaviour
             return;
         }
         turns++;
+        PlayerPrefs.SetInt("Turns", turns);
         if (firstCard == null)
         {
             firstCard = cardTile;
@@ -60,6 +62,7 @@ public class GameManager : MonoBehaviour
             secondCard = cardTile;
             CheckMatch();
         }
+        gameHudManager.UpdateHudData();
     }
     private IEnumerator CheckMatchCards()
     {
@@ -99,6 +102,7 @@ public class GameManager : MonoBehaviour
     {
         
         score += matchScore;
+        gameHudManager.UpdateHudData();
         SaveGame();
     }
 
@@ -167,6 +171,7 @@ public class GameManager : MonoBehaviour
         gridGenrator.GenrateCardGrid();
         score = 0;
         turns = 0;
+        gameHudManager.UpdateHudData();
         gameState = GameState.Idle;
         SaveGame();
     }
@@ -174,6 +179,7 @@ public class GameManager : MonoBehaviour
     {
         score = PlayerPrefs.GetInt("Score");
         turns = PlayerPrefs.GetInt("Turns");
+        gameHudManager.UpdateHudData();
         LoadGridData();
     }
 
