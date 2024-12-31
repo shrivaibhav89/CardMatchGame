@@ -66,6 +66,7 @@ public class CardTile : MonoBehaviour
             elapsedTime += Time.deltaTime;
             yield return null;
         }
+        transform.localScale  = endScale;
         itemImage.sprite = null;
     }
 
