@@ -26,7 +26,7 @@ public class GameManager : MonoBehaviour
     public MainMenuManager mainMenuManager;
     public List<CardMatchmaker> cardMatchmakers = new List<CardMatchmaker>();
     private CardMatchmaker currentCardMatchmaker;
-    public List<CardMatchmaker> activeCardMatchmakers = new List<CardMatchmaker>();
+    public GameOver gameOver;
 
     private void Awake()
     {
@@ -120,6 +120,7 @@ public class GameManager : MonoBehaviour
         cardMatchmaker.firstCard = null;
         cardMatchmaker.secondCard = null;
         gameState = GameState.Idle;
+        CheckForGameOver();
     }
     public void CheckMatch(CardMatchmaker cardMatchmaker)
     {
@@ -216,6 +217,7 @@ public class GameManager : MonoBehaviour
         SaveGame();
         gridGenrator.ClearGrid();
         mainMenuManager.ShowMainMenu();
+        gameState = GameState.Idle;
     }
 
     public void CheckForGameOver()
@@ -223,6 +225,8 @@ public class GameManager : MonoBehaviour
         if (gridGenrator.tiles.TrueForAll(t => t.isExposed))
         {
             gameState = GameState.GameOver;
+            gameOver.ShowGameOverPanel();
+
             Debug.Log("Game Over");
         }
     }
