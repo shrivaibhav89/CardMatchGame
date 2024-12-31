@@ -95,6 +95,15 @@ public class GridGenrator : MonoBehaviour
         }
         RescalGridCell();
     }
+
+    public void ClearGrid()
+    {
+        for (int i = 0; i < tiles.Count; i++)
+        {
+            Destroy(tiles[i].gameObject);
+        }
+        tiles.Clear();
+    }
 }
 
 [System.Serializable]

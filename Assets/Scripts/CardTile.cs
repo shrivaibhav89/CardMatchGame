@@ -28,7 +28,7 @@ public class CardTile : MonoBehaviour
     }
     private void RevealCard()
     {
-        if (isRevealed || GameManager.instance.gameState != GameManager.GameState.Idle)
+        if (isRevealed )
         {
             return;
         }

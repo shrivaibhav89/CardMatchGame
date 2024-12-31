@@ -75,4 +75,9 @@ public class MainMenuManager : MonoBehaviour
         GameManager.instance.LoadGame();
         mainMenuPanel.SetActive(false);
     }
+
+    public void ShowMainMenu()
+    {
+        mainMenuPanel.SetActive(true);
+    }
 }

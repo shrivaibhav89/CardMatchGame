@@ -11,7 +11,6 @@ public class GameManager : MonoBehaviour
     public enum GameState
     {
         Idle,
-        MatchingCard,
         GameOver
     }
     public GridGenrator gridGenrator;
@@ -24,6 +23,10 @@ public class GameManager : MonoBehaviour
     public GameState gameState = GameState.Idle;
     public static GameManager instance;
     public GameHudManager gameHudManager;
+    public MainMenuManager mainMenuManager;
+    public List<CardMatchmaker> cardMatchmakers = new List<CardMatchmaker>();
+    private CardMatchmaker currentCardMatchmaker;
+    public List<CardMatchmaker> activeCardMatchmakers = new List<CardMatchmaker>();
 
     private void Awake()
     {
@@ -45,28 +48,54 @@ public class GameManager : MonoBehaviour
         GameEventsManager.cardRevalEvent.RemoveListener(OnCardReveal);
     }
 
+    private void InitCardMatchmakerPool()
+    {
+        for (int i = 0; i < 10; i++)
+        {
+            CardMatchmaker cardMatchmaker = new CardMatchmaker();
+            cardMatchmakers.Add(cardMatchmaker);
+        }
+    }
+    private CardMatchmaker GetCardMatchmaker()
+    {
+        foreach (CardMatchmaker cardMatchmaker in cardMatchmakers)
+        {
+            if (cardMatchmaker.firstCard == null && cardMatchmaker.secondCard == null)
+            {
+                return cardMatchmaker;
+            }
+        }
+        return null;
+    }
+
     private void OnCardReveal(CardTile cardTile)
     {
-        if (firstCard != null && secondCard != null)
+        if(currentCardMatchmaker == null || (currentCardMatchmaker.firstCard != null && currentCardMatchmaker.secondCard != null))
         {
-            return;
+            currentCardMatchmaker = GetCardMatchmaker();
         }
+       // currentCardMatchmaker = GetCardMatchmaker();
+
+        // if (firstCard != null && secondCard != null)
+        // {
+        //     return;
+        // }
         turns++;
         PlayerPrefs.SetInt("Turns", turns);
-        if (firstCard == null)
+        if (currentCardMatchmaker.firstCard == null)
         {
-            firstCard = cardTile;
+            currentCardMatchmaker.firstCard = cardTile;
         }
         else
         {
-            secondCard = cardTile;
-            CheckMatch();
+            currentCardMatchmaker.secondCard = cardTile;
+            CheckMatch(currentCardMatchmaker);
         }
         gameHudManager.UpdateHudData();
     }
-    private IEnumerator CheckMatchCards()
+    private IEnumerator CheckMatchCards(CardMatchmaker cardMatchmaker)
     {
-        if (firstCard.cardType == secondCard.cardType)
+        if (cardMatchmaker.firstCard.cardType == cardMatchmaker.secondCard.cardType)
         {
             SoundManager.instance.PlaySound(SoundManager.instance.cardMatchSound);
         }
@@ -75,27 +104,26 @@ public class GameManager : MonoBehaviour
             SoundManager.instance.PlaySound(SoundManager.instance.cardMismatchSound);
         }
         yield return new WaitForSeconds(1);
-        if (firstCard.cardType == secondCard.cardType)
+        if (cardMatchmaker.firstCard.cardType == cardMatchmaker.secondCard.cardType)
         {
             //SoundManager.instance.PlaySound(SoundManager.instance.cardMatchSound);
-            firstCard.HideCard();
-            secondCard.HideCard();
+            cardMatchmaker.firstCard.HideCard();
+            cardMatchmaker.secondCard.HideCard();
             AddScore(cardMatchScore);
         }
         else
         {
             //  SoundManager.instance.PlaySound(SoundManager.instance.cardFlipSound);
-            firstCard.ResetCard();
-            secondCard.ResetCard();
+            cardMatchmaker.firstCard.ResetCard();
+            cardMatchmaker.secondCard.ResetCard();
         }
-        firstCard = null;
-        secondCard = null;
+        cardMatchmaker.firstCard = null;
+        cardMatchmaker.secondCard = null;
         gameState = GameState.Idle;
     }
-    public void CheckMatch()
+    public void CheckMatch(CardMatchmaker cardMatchmaker)
     {
-        gameState = GameState.MatchingCard;
-        StartCoroutine(CheckMatchCards());
+        StartCoroutine(CheckMatchCards(cardMatchmaker));
     }
 
     public void AddScore(int matchScore)
@@ -145,7 +173,7 @@ public class GameManager : MonoBehaviour
             // gridGenrator.gridWidth = gridData.gridWidth;
             // gridGenrator.gridHeight = gridData.gridHeight;
             gridGenrator.CreateGridForLoadgame(gridData.gridWidth,gridData.gridHeight);
-            await Task.Delay(100); // Delay to allow grid to be generated before loading data
+            await Task.Delay(10); // Delay to allow grid to be generated before loading data
 
             for (int i = 0; i < gridData.cells.Count; i++)
             {
@@ -166,6 +194,7 @@ public class GameManager : MonoBehaviour
 
     public void StartNewGame(int gridWidth,int gridHeight)
     {
+        InitCardMatchmakerPool();
         gridGenrator.gridWidth = gridWidth;
         gridGenrator.gridHeight = gridHeight;
         gridGenrator.GenrateCardGrid();
@@ -181,6 +210,21 @@ public class GameManager : MonoBehaviour
         turns = PlayerPrefs.GetInt("Turns");
         gameHudManager.UpdateHudData();
         LoadGridData();
+    }
+    public void ExitToMainMenu()
+    {
+        SaveGame();
+        gridGenrator.ClearGrid();
+        mainMenuManager.ShowMainMenu();
+    }
+
+    public void CheckForGameOver()
+    {
+        if (gridGenrator.tiles.TrueForAll(t => t.isExposed))
+        {
+            gameState = GameState.GameOver;
+            Debug.Log("Game Over");
+        }
     }
 
 
@@ -206,5 +250,12 @@ public class GameManager : MonoBehaviour
         public int index;
         public bool isExposed;
         public int cardType;
+    }
+
+    [Serializable]
+    public class CardMatchmaker
+    {
+        public CardTile firstCard;
+        public CardTile secondCard;
     }
 }
