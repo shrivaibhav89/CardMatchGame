@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -10,6 +7,7 @@ public class GameHudManager : MonoBehaviour
       [SerializeField] private TMP_Text scoreText;
       [SerializeField] private TMP_Text turnsText;
       [SerializeField] private Button exitButton;
+      [SerializeField] private TMP_Text streakText;
 
       public void OnEnable()
       {
@@ -30,5 +28,6 @@ public class GameHudManager : MonoBehaviour
       {
             scoreText.text = GameManager.instance.score.ToString("00");
             turnsText.text = GameManager.instance.turns.ToString("00");
+            streakText.text = $"x{GameManager.instance.streakMultiplier}";
       }
 }

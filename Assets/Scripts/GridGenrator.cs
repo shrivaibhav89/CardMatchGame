@@ -1,7 +1,4 @@
-using System.Collections;
 using System.Collections.Generic;
-using System.Diagnostics.CodeAnalysis;
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -29,14 +26,14 @@ public class GridGenrator : MonoBehaviour
         for (int i = 0; i < positions.Count; i++)
         {
             int temp = positions[i];
-            int randomIndex = UnityEngine.Random.Range(i, positions.Count);
+            int randomIndex = Random.Range(i, positions.Count);
             positions[i] = positions[randomIndex];
             positions[randomIndex] = temp;
         }
 
         for (int i = 0; i < totalCards / 2; i++)
         {
-            CardType cardType = cardTypes[UnityEngine.Random.Range(0, cardTypes.Length)];
+            CardType cardType = cardTypes[Random.Range(0, cardTypes.Length)];
 
             CardTile cardTile1 = Instantiate(tilePrefab, cardGrid.transform);
             cardTile1.gameObject.SetActive(true);

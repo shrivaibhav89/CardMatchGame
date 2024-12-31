@@ -4,15 +4,14 @@ using UnityEngine;
 
 public class SoundManager : MonoBehaviour
 {
-    //sound manager instance make it singelton 
     public static SoundManager instance;
     public AudioClip cardFlipSound;
     public AudioClip cardMatchSound;
     public AudioClip cardMismatchSound;
-    public AudioClip GameOverSound;
-     public AudioClip resetFlipSound;
+    public AudioClip gameOverSound;
+    public AudioClip resetFlipSound;
     public int poolSize = 5;
-    // make it singeton 
+    public AudioSource[] audioSources;
     private void Awake()
     {
         if (instance == null)
@@ -26,8 +25,7 @@ public class SoundManager : MonoBehaviour
         }
     }
 
-    public AudioSource[] audioSources;
-    // Start is called before the first frame update
+
     private void CreateAudioSourcePool()
     {
         audioSources = new AudioSource[poolSize];
@@ -40,7 +38,7 @@ public class SoundManager : MonoBehaviour
         }
     }
     // play sound
-    public void PlaySound(AudioClip clip,bool loop = false)
+    public void PlaySound(AudioClip clip, bool loop = false)
     {
         foreach (var audioSource in audioSources)
         {

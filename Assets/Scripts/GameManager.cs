@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using UnityEditor;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -27,6 +26,8 @@ public class GameManager : MonoBehaviour
     public List<CardMatchmaker> cardMatchmakers = new List<CardMatchmaker>();
     private CardMatchmaker currentCardMatchmaker;
     public GameOver gameOver;
+    public int streakMultiplier = 1;
+
 
     private void Awake()
     {
@@ -70,16 +71,11 @@ public class GameManager : MonoBehaviour
 
     private void OnCardReveal(CardTile cardTile)
     {
-        if(currentCardMatchmaker == null || (currentCardMatchmaker.firstCard != null && currentCardMatchmaker.secondCard != null))
+        if (currentCardMatchmaker == null || (currentCardMatchmaker.firstCard != null && currentCardMatchmaker.secondCard != null))
         {
             currentCardMatchmaker = GetCardMatchmaker();
         }
-       // currentCardMatchmaker = GetCardMatchmaker();
-
-        // if (firstCard != null && secondCard != null)
-        // {
-        //     return;
-        // }
+       
         turns++;
         PlayerPrefs.SetInt("Turns", turns);
         if (currentCardMatchmaker.firstCard == null)
@@ -116,11 +112,13 @@ public class GameManager : MonoBehaviour
             //  SoundManager.instance.PlaySound(SoundManager.instance.cardFlipSound);
             cardMatchmaker.firstCard.ResetCard();
             cardMatchmaker.secondCard.ResetCard();
+            streakMultiplier = 1;
         }
         cardMatchmaker.firstCard = null;
         cardMatchmaker.secondCard = null;
         gameState = GameState.Idle;
         CheckForGameOver();
+        gameHudManager.UpdateHudData();
     }
     public void CheckMatch(CardMatchmaker cardMatchmaker)
     {
@@ -129,8 +127,9 @@ public class GameManager : MonoBehaviour
 
     public void AddScore(int matchScore)
     {
-        
-        score += matchScore;
+
+        score += matchScore * streakMultiplier;
+        streakMultiplier++;
         gameHudManager.UpdateHudData();
         SaveGame();
     }
@@ -173,7 +172,7 @@ public class GameManager : MonoBehaviour
             GridData gridData = JsonUtility.FromJson<GridData>(json);
             // gridGenrator.gridWidth = gridData.gridWidth;
             // gridGenrator.gridHeight = gridData.gridHeight;
-            gridGenrator.CreateGridForLoadgame(gridData.gridWidth,gridData.gridHeight);
+            gridGenrator.CreateGridForLoadgame(gridData.gridWidth, gridData.gridHeight);
             await Task.Delay(10); // Delay to allow grid to be generated before loading data
 
             for (int i = 0; i < gridData.cells.Count; i++)
@@ -182,18 +181,19 @@ public class GameManager : MonoBehaviour
                 CardTile tile = gridGenrator.tiles[cellData.index];
                 tile.isExposed = cellData.isExposed;
                 tile.cardType = Array.Find(gridGenrator.cardTypes, ct => ct.cardId == cellData.cardType);
-                tile.ResetCard(); // Reset the card to update its appearance
+                tile.ResetCard(); 
                 if (tile.isExposed)
                 {
                     tile.HideCard();
                 }
-               // tile.transform.SetSiblingIndex(cellData.position);
+                // tile.transform.SetSiblingIndex(cellData.position);
             }
             gameState = GameState.Idle;
+            CheckForGameOver();
         }
     }
 
-    public void StartNewGame(int gridWidth,int gridHeight)
+    public void StartNewGame(int gridWidth, int gridHeight)
     {
         InitCardMatchmakerPool();
         gridGenrator.gridWidth = gridWidth;
@@ -226,17 +226,9 @@ public class GameManager : MonoBehaviour
         {
             gameState = GameState.GameOver;
             gameOver.ShowGameOverPanel();
+            SoundManager.instance.PlaySound(SoundManager.instance.gameOverSound);
 
             Debug.Log("Game Over");
-        }
-    }
-
-
-    public void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.L))
-        {
-            LoadGridData();
         }
     }
 
