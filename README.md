@@ -44,3 +44,8 @@ After building, navigate to the build location and run the executable file.
   Scripts/: Contains C# scripts.
   Sounds/: Contains sound assets.
   TextMesh Pro/: Contains TextMesh Pro assets.
+
+Gameplay 
+
+![1-04-2025 (15-30-37)](https://github.com/user-attachments/assets/704fa3f6-d033-436d-8026-e72adeb3d32c)
+
